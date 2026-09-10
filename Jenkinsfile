@@ -31,6 +31,31 @@ pipeline {
                 sh 'docker build -t myapp:v1 .'
             }
         }
+	stage('Tag'){
+		steps{
+			sh 'docker tag myapp:v1 vishureddy28/myapp:v1'
+		}
+	}
+	stage('Docker Login'){
+		steps{
+			withCredentials([
+				usernamePassword(
+					credentialsId: 'dockerhub-creds',
+					usernameVariable: 'DOCKER_USER',
+					passwordVariable: 'DOCKER_PASS'
+				)
+			]){
+				sh '''
+				echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+				'''
+			}
+		}
+	}
+	stage('Push'){
+		steps{
+			sh 'docker push vishureddy28/myapp:v1'
+		}
+	}
         stage('Run Container'){
             steps{
                 sh 'docker run --name app1 myapp:v1'
